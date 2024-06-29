@@ -89,9 +89,9 @@ autoscaling:
 
 # Additional volumes on the output Deployment definition.
 volumes: 
-- name: cm
+- name: example-config-volume
   configMap:
-    name: example-config-volume
+    name: example-config
 # - name: foo
 #   secret:
 #     secretName: mysecret
