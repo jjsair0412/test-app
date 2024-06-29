@@ -105,6 +105,11 @@ volumeMounts:
 #   mountPath: "/etc/foo"
 #   readOnly: true
 
+env:
+  DB_URL: database_url
+  LOG_LEVEL: log_level
+
+
 nodeSelector: {}
 
 tolerations: []
