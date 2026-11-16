@@ -1,8 +1,8 @@
 global:
-  targetNamespace: "test-namespace"
+  targetNamespace: ""
 
 namespace:
-  create: true
+  create: false
   labels:
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/audit: restricted
@@ -10,7 +10,7 @@ namespace:
   annotations: {}
 msaApplication:
   networkPolicy:
-    enabled: true
+    enabled: false
     podSelector:
       matchLabels: {}
     policyTypes:
@@ -20,7 +20,7 @@ msaApplication:
     egress: []
 suseVirtualization:
   networkPolicy:
-    enabled: true
+    enabled: false
     podSelector:
       matchLabels:
         kubevirt.io: virt-launcher

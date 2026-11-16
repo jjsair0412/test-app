@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ default .Release.Namespace .Values.global.targetNamespace }}
+  name: {{ default "test" .Values.global.targetNamespace }}
   labels:
     {{- with .Values.namespace.labels }}
     {{- toYaml . | nindent 4 }}
