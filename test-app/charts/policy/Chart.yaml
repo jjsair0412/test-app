@@ -1,0 +1,5 @@
+apiVersion: v2
+name: policy
+description: NetworkPolicy and Pod Security Admission configuration
+type: application
+version: 0.1.0

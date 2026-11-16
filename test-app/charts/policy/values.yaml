@@ -1,0 +1,31 @@
+global:
+  targetNamespace: ""
+
+namespace:
+  create: false
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations: {}
+msaApplication:
+  networkPolicy:
+    enabled: false
+    podSelector:
+      matchLabels: {}
+    policyTypes:
+      - Ingress
+      - Egress
+    ingress: []
+    egress: []
+suseVirtualization:
+  networkPolicy:
+    enabled: false
+    podSelector:
+      matchLabels:
+        kubevirt.io: virt-launcher
+    policyTypes:
+      - Ingress
+      - Egress
+    ingress: []
+    egress: []

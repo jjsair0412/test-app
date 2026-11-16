@@ -1,0 +1,5 @@
+apiVersion: v2
+name: vm
+description: SUSE Virtualization workload grouping chart
+type: application
+version: 0.1.0

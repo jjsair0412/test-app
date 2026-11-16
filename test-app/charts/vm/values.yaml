@@ -1,0 +1,29 @@
+global:
+  targetNamespace: ""
+
+virtualizationVmi:
+  enabled: false
+  name: example-vmi
+  labels: {}
+  annotations: {}
+  terminationGracePeriodSeconds: 30
+  domain:
+    cpu:
+      cores: 1
+    resources:
+      requests:
+        memory: 512Mi
+    disks:
+      - name: containerdisk
+        disk:
+          bus: virtio
+    interfaces:
+      - name: default
+        masquerade: {}
+  networks:
+    - name: default
+      pod: {}
+  volumes:
+    - name: containerdisk
+      containerDisk:
+        image: quay.io/containerdisks/cirros:0.6.2

@@ -1,0 +1,11 @@
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "msa-application.fullname" . }}-config
+  namespace: {{ default .Release.Namespace .Values.global.targetNamespace }}
+  labels:
+    {{- include "msa-application.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.config | nindent 2 }}
+{{- end }}
