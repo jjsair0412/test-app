@@ -2,7 +2,7 @@ global:
   targetNamespace: ""
 
 namespace:
-  create: false
+  create: true
   labels:
     pod-security.kubernetes.io/enforce: baseline
     pod-security.kubernetes.io/audit: restricted
