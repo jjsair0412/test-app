@@ -1,5 +1,5 @@
 global:
-  targetNamespace: ""
+  targetNamespace: "test-namespace"
 
 namespace:
   create: true
@@ -10,7 +10,7 @@ namespace:
   annotations: {}
 msaApplication:
   networkPolicy:
-    enabled: false
+    enabled: true
     podSelector:
       matchLabels: {}
     policyTypes:
@@ -20,7 +20,7 @@ msaApplication:
     egress: []
 suseVirtualization:
   networkPolicy:
-    enabled: false
+    enabled: true
     podSelector:
       matchLabels:
         kubevirt.io: virt-launcher
