@@ -1,0 +1,24 @@
+{{- if .Values.virtualizationVmi.enabled }}
+apiVersion: kubevirt.io/v1
+kind: VirtualMachineInstance
+metadata:
+  name: {{ .Values.virtualizationVmi.name }}
+  namespace: {{ default .Release.Namespace .Values.global.targetNamespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- with .Values.virtualizationVmi.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.virtualizationVmi.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  terminationGracePeriodSeconds: {{ .Values.virtualizationVmi.terminationGracePeriodSeconds }}
+  domain:
+    {{- toYaml .Values.virtualizationVmi.domain | nindent 4 }}
+  networks:
+    {{- toYaml .Values.virtualizationVmi.networks | nindent 4 }}
+  volumes:
+    {{- toYaml .Values.virtualizationVmi.volumes | nindent 4 }}
+{{- end }}

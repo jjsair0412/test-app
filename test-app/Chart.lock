@@ -1,0 +1,12 @@
+dependencies:
+- name: msa-application
+  repository: file://charts/msa-application
+  version: 0.1.0
+- name: policy
+  repository: file://charts/policy
+  version: 0.1.0
+- name: vm
+  repository: file://charts/vm
+  version: 0.1.0
+digest: sha256:5dfd3ecc998d4186d35cdaeb36bbb61c942213e93c92cad5162f4a9c040d3294
+generated: "2026-11-17T02:25:08.618205+09:00"
