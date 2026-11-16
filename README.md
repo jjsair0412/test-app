@@ -7,15 +7,13 @@ VirtualMachineInstance(VMI)를 배포하기 위한 Helm 통합 차트 예제를 
 
 ```text
 platform/
-└── argocd/                       # 플랫폼 Argo CD 차트와 설정값
+├── argocd/                       # Argo CD 차트와 설정값
+├── msa-app/                      # MSA 애플리케이션 차트와 설정값
+├── policy/                       # NetworkPolicy 및 PSA 차트와 설정값
+└── vm/                           # SUSE Virtualization VMI 차트와 설정값
 test-app/
-├── Chart.yaml
-├── values.yaml
-└── charts/
-    ├── msa-application/          # 배포, 서비스, 설정 맵, 인그레스, 수평 파드 자동 확장
-    ├── policy/                   # MSA 및 가상화 네트워크 정책, PSA 레이블
-    └── vm/
-        └── templates/            # SUSE Virtualization용 VMI
+├── Chart.yaml                    # 위 차트들을 묶어 설치하는 통합 차트
+└── values.yaml                   # 통합 설치 시 사용할 차트별 설정값
 ```
 
 ## 사전 요구 사항
@@ -32,7 +30,25 @@ helm dependency update ./test-app
 helm upgrade --install test-app ./test-app --namespace test-app --create-namespace
 ```
 
-애플리케이션 및 정책 차트는 기본적으로 활성화됩니다. NetworkPolicy,
+`test-app`은 세 차트를 함께 설치하기 위한 통합 차트입니다. 각 차트는
+독립적으로도 설치할 수 있습니다. 독립 설치 시 해당 차트의 `values.yaml`에서
+설정값을 변경합니다.
+
+```sh
+# MSA 애플리케이션
+helm upgrade --install msa-app ./platform/msa-app \
+  --namespace test-app --create-namespace
+
+# 정책 (대상 네임스페이스가 이미 있어야 합니다)
+helm upgrade --install policy ./platform/policy --namespace test-app
+
+# VMI (KubeVirt 설치 필요)
+helm upgrade --install vm ./platform/vm \
+  --namespace test-app \
+  --set virtualizationVmi.enabled=true
+```
+
+통합 차트에서는 애플리케이션과 정책이 기본적으로 활성화됩니다. NetworkPolicy,
 네임스페이스 생성 및 PSA 레이블, VMI는 선택적으로 활성화할 수 있습니다.
 차트가 PSA 레이블을 포함한 네임스페이스를 생성하도록 하려면 릴리스를 기존
 관리 네임스페이스에 설치하고 별도의 대상 네임스페이스를 지정합니다.
@@ -69,7 +85,9 @@ helm template test-app ./test-app \
   --set vm.virtualizationVmi.enabled=true
 ```
 
-워크로드 이미지, 리소스, 정책, VM 사양은 `test-app/values.yaml`에서 설정합니다.
+통합 설치의 워크로드 이미지, 리소스, 정책, VM 사양은 `test-app/values.yaml`에서
+설정합니다. 독립 설치에서는 각각 `platform/msa-app/values.yaml`,
+`platform/policy/values.yaml`, `platform/vm/values.yaml`을 수정합니다.
 운영 환경에 적용하기 전에 예시 이미지와 설정값을 실제 값으로 바꾸세요.
 NetworkPolicy의 선택자와 인그레스/이그레스 규칙은 클러스터 및 애플리케이션에
 따라 다르므로, 이 차트는 트래픽 허용 여부를 임의로 가정하지 않습니다.

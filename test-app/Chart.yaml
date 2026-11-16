@@ -8,13 +8,13 @@ dependencies:
   - name: msa-application
     alias: msa-app
     version: 0.1.0
-    repository: file://charts/msa-application
+    repository: file://../platform/msa-app
     condition: msa-app.enabled
   - name: policy
     version: 0.1.0
-    repository: file://charts/policy
+    repository: file://../platform/policy
     condition: policy.enabled
   - name: vm
     version: 0.1.0
-    repository: file://charts/vm
+    repository: file://../platform/vm
     condition: vm.enabled

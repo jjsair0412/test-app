@@ -1,12 +1,12 @@
 dependencies:
 - name: msa-application
-  repository: file://charts/msa-application
+  repository: file://../platform/msa-app
   version: 0.1.0
 - name: policy
-  repository: file://charts/policy
+  repository: file://../platform/policy
   version: 0.1.0
 - name: vm
-  repository: file://charts/vm
+  repository: file://../platform/vm
   version: 0.1.0
-digest: sha256:5dfd3ecc998d4186d35cdaeb36bbb61c942213e93c92cad5162f4a9c040d3294
-generated: "2026-11-17T02:25:08.618205+09:00"
+digest: sha256:4f0a2132e7dcdf9418b146c66c3da417d7b7521cc7cb0cb121f5e22c9075edbf
+generated: "2026-11-17T03:29:24.378563+09:00"
