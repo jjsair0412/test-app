@@ -1,0 +1,61 @@
+#
+# LB Type : NLB
+# Traefik endpoints : web(8000), websecure(8443), admin(9000) NLB TargetGroup에 등록됨
+# iptables 없이 Pod -> LB 간 직접 통신하므로 Deployment에 topologySpreadConstraints를 설정하여 AZ별로 균등하게 배포되도록 함
+#
+deployment:
+  kind: Deployment
+  replicas: 3
+
+autoscaling:
+  enabled: false
+#  minReplicas: 3
+#  maxReplicas: 3
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+# maxsKew: 1 인 경우, 노드 3개 기준 Pod 3개가 배포되면 AZ별로 1개씩 배포
+#  - 3 AZ에 파드 3개면 AZ마다 1개, HPA로 4개가 되면 2/1/1
+#  - DoNotSchedule이라 특정 AZ에 노드 여유가 없으면 해당 파드는 Pending
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: traefik
+
+ports:
+  web:
+    port: 8000
+    proxyProtocol:
+      trustedIPs: ["10.0.0.0/16"]      # NLB가 있는 VPC CIDR
+  websecure:
+    port: 8443
+    proxyProtocol:
+      trustedIPs: ["10.0.0.0/16"]
+  admin:
+    port: 9000
+    expose:
+      default: true   
+    exposedPort: 9000
+    protocol: TCP
+    proxyProtocol:
+      trustedIPs: ["10.0.0.0/16"] 
+
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+    # 원하는 서브넷과 고정 사설 IP 지정 (선택. 순서대로 1:1 매칭)
+    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-aaa,subnet-bbb,subnet-ccc
+    service.beta.kubernetes.io/aws-load-balancer-private-ipv4-addresses: 10.0.1.10,10.0.2.10,10.0.3.10
+    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+#   service.beta.kubernetes.io/aws-load-balancer-attributes: load_balancing.cross_zone.enabled=true
+    service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: deregistration_delay.timeout_seconds=30
+  loadBalancerSourceRanges:            # NLB SG 인바운드 허용 대역
+    - 10.0.0.0/16   # on-prem CIDR

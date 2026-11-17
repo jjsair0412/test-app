@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+# 1) nginx 파드
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-demo  
+  template:
+    metadata:
+      labels:
+        app: nginx-demo    
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27 
+          ports:
+            - name: http 
+              containerPort: 80  
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc       
+  namespace: demo
+spec:
+  selector:
+    app: nginx-demo       
+  ports:
+    - name: http
+      port: 8080                 # Traefik가 접근할 포트 (Service의 port)
+      targetPort: http        
+---
+# 3) Middleware: 응답에 헤더 추가
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: add-header           
+  namespace: demo
+spec:
+  headers:
+    customResponseHeaders:
+      X-Served-By: traefik-demo
+---
+# 4) IngressRoute: Traefik 라우터 설정
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nginx-route
+  namespace: demo
+spec:
+  entryPoints:
+    - web                        # Traefik의 EntryPoint 이름
+  routes:
+    - match: Host(`nginx.sa.local`)   # Host Header 값이 nginx.sa.local인 요청만 라우팅
+      kind: Rule
+      middlewares:
+        - name: add-header       # 같은 ns의 Middleware CRD 이름
+      services:
+        - name: nginx-svc        # 같은 ns의 k8s Service 이름 (kind 생략 = Service)
+          port: 8080             # Service의 port (컨테이너 포트 80이 아님)
