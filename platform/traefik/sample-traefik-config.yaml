@@ -40,10 +40,22 @@ spec:
       targetPort: http        
 ---
 # 3) Middleware: 응답에 헤더 추가
+# http to https redirect
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: add-header           
+  name: redirect-https
+  namespace: demo
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# 3) Middleware: 응답에 헤더를 하나 추가 (동작 확인용)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: add-header              
   namespace: demo
 spec:
   headers:
@@ -58,12 +70,46 @@ metadata:
   namespace: demo
 spec:
   entryPoints:
-    - web                        # Traefik의 EntryPoint 이름
+    - websecure                        # Traefik의 EntryPoint 이름
   routes:
-    - match: Host(`nginx.sa.local`)   # Host Header 값이 nginx.sa.local인 요청만 라우팅
+    - match: Host(`nginx.test.local`)   # Host Header 값이 nginx.test.local인 요청만 라우팅
       kind: Rule
       middlewares:
         - name: add-header       # 같은 ns의 Middleware CRD 이름
       services:
         - name: nginx-svc        # 같은 ns의 k8s Service 이름 (kind 생략 = Service)
           port: 8080             # Service의 port (컨테이너 포트 80이 아님)
+  tls: {}                              # TLSStore default 인증서 사용. 블록 자체는 필수
+  # 라우트 전용 인증서를 쓰려면 ingress와 동일하게 아래와 같이 설정
+# tls:
+#   secretName: wildcard-tls       # TLS 인증서 Secret 이름 (cert-manager로 발급 가능, TLSStore 등록한 경우 생략 가능)
+---
+# HTTP로 들어오면 리다이렉트만 하는 라우트
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nginx-redirect
+  namespace: demo
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`nginx.test.local`)
+      kind: Rule
+      middlewares:
+        - name: redirect-https
+      services:
+        - name: noop@internal         # 리다이렉트만 하니 실제 백엔드가 필요 없음
+          kind: TraefikService
+---
+apiVersion: traefik.io/v1alpha1
+kind: TLSStore
+metadata:
+  name: default            # 이름은 반드시 default
+  namespace: test2         # Traefik 네임스페이스. Secret도 같은 ns에 생성
+spec:
+  defaultCertificate:
+    secretName: wildcard-tls   # SNI가 없거나 어떤 인증서와도 안 맞을 때 내보낼 인증서
+  certificates:                # (선택) 저장소에 미리 넣어 둘 추가 인증서
+    - secretName: other-domain-tls
+    - secretName: other2-domain-tls
