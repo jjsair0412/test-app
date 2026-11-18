@@ -1,0 +1,46 @@
+# HTTP → HTTPS 리다이렉트
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: cattle-system
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# HTTPS: Rancher 본체
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rancher
+  namespace: cattle-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`rancher.customer.co.kr`)
+      kind: Rule
+      services:
+        - name: rancher            # Rancher 차트가 만든 Service
+          port: 80                 # TLS는 Traefik에서 끝내고 Rancher에는 HTTP로 전달
+  tls:
+    secretName: tls-rancher-ingress   # 와일드카드를 TLSStore default로 쓰면 tls: {} 로
+---
+# HTTP: 리다이렉트만
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rancher-redirect
+  namespace: cattle-system
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`rancher.customer.co.kr`)
+      kind: Rule
+      middlewares:
+        - name: redirect-https
+      services:
+        - name: noop@internal
+          kind: TraefikService
